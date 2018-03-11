@@ -51,20 +51,23 @@ class zlibFile extends ZipArchive{
         return parent::close();
     }
 
-    public function addFiles($fileName) {
+    public function addFiles($fileName, $localName = NULL, $start = 0, $length = 0) {
         if ($this->fileCounts >= $this->fileNumLimit) {
             $this->reopen();
         }
 
-        if (func_num_args() > 1) {
-            $localName = func_get_arg(1);
-            $result = parent::addFile($fileName, $localName);
-            if ($result) {
-                $this->fileCounts++;
-            }
-            return $result;
+        if (is_null($localName)) {
+            $localName = $fileName;
         }
-        $result = parent::addFile($fileName);
+
+        if ($length) {
+            $content = file_get_contents($fileName, 0, null, $start);
+        } else {
+            $content = file_get_contents($fileName, 0, null, $start, $length);
+        }
+
+        $result = parent::addFromString($localName, $content);
+
         if ($result) {
             $this->fileCounts++;
         }
